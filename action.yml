@@ -1,6 +1,9 @@
 name: 'Comment on new issue'
 description: 'Comment on issue with a defined message whenever someone creates a new issue.'
 inputs:
+  description: "GitHub token"
+    required: false
+    default: ${{ GH_TOKEN }}
   message: 
     description: 'Message to as comment body'
     required: true

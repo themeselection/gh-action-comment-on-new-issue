@@ -15,6 +15,9 @@ try {
     // Get octokit
     const octokit = getOctokit()
     const ctx = github.context
+    
+    console.log("ctx.eventName", ctx.eventName)
+    console.log("Payload", JSON.stringify(github.context.payload, undefined, 2))
 
     // Check if event is issue
     if (ctx.eventName === "issues") {

@@ -8520,6 +8520,8 @@ module.exports = require("zlib");
 var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
+// Docs: https://docs.github.com/en/actions
+
 const core = __nccwpck_require__(2186);
 const github = __nccwpck_require__(5438);
 
@@ -8538,10 +8540,11 @@ try {
     const octokit = getOctokit()
     const ctx = github.context
     
-    console.log("ctx.eventName", ctx.eventName)
-    console.log("Payload", JSON.stringify(github.context.payload, undefined, 2))
+    // console.log("ctx.eventName", ctx.eventName)
+    // console.log("Payload", JSON.stringify(github.context.payload, undefined, 2))
 
     // Check if event is issue
+    // Docs: https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows
     if (ctx.eventName === "issues") {
         // Check if new issue is opened
         if (ctx.payload.action === "opened") {

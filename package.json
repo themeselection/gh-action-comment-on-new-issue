@@ -20,7 +20,9 @@
   "homepage": "https://github.com/jd-0001/gh-action-comment-on-issue-open#readme",
   "dependencies": {
     "@actions/core": "^1.5.0",
-    "@actions/github": "^5.0.0",
+    "@actions/github": "^5.0.0"
+  },
+  "devDependencies": {
     "@vercel/ncc": "^0.31.1"
   }
 }

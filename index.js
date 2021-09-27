@@ -1,3 +1,5 @@
+// Docs: https://docs.github.com/en/actions
+
 const core = require('@actions/core');
 const github = require('@actions/github');
 
@@ -16,10 +18,11 @@ try {
     const octokit = getOctokit()
     const ctx = github.context
     
-    console.log("ctx.eventName", ctx.eventName)
-    console.log("Payload", JSON.stringify(github.context.payload, undefined, 2))
+    // console.log("ctx.eventName", ctx.eventName)
+    // console.log("Payload", JSON.stringify(github.context.payload, undefined, 2))
 
     // Check if event is issue
+    // Docs: https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows
     if (ctx.eventName === "issues") {
         // Check if new issue is opened
         if (ctx.payload.action === "opened") {

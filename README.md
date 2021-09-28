@@ -1,6 +1,6 @@
 # Comment on new issue
 
-This actions comments with your desired message whenever new issue is created. Comment will be posted by the author via GitHub personal token.
+This actions comments with your desired message whenever new issue is created.
 
 ## Inputs
 
@@ -8,7 +8,7 @@ This actions comments with your desired message whenever new issue is created. C
 
 #### *Default: ${{ github.token }}*
 
-GitHub personal token
+GitHub token
 
 ### `message`*
 
@@ -41,7 +41,7 @@ jobs:
     name: Job for commenting on new issue
     steps:
       - name: Comment
-        uses: jd-0001/gh-action-comment-on-new-issue@v2.0.0
+        uses: jd-0001/gh-action-comment-on-new-issue@v2.0.3
         with:
           message: 'Welcome to the repo :)'
 ```
@@ -59,7 +59,7 @@ jobs:
     name: Job for commenting on new issue
     steps:
       - name: Comment
-        uses: jd-0001/gh-action-comment-on-new-issue@v2.0.0
+        uses: jd-0001/gh-action-comment-on-new-issue@v2.0.3
         with:
           message: 'Welcome to the repo :)'
           only-if-label: 'support'
@@ -78,7 +78,7 @@ jobs:
     name: Job for commenting on new issue
     steps:
       - name: Comment
-        uses: jd-0001/gh-action-comment-on-new-issue@v2.0.0
+        uses: jd-0001/gh-action-comment-on-new-issue@v2.0.3
         with:
           message: 'Welcome to the repo :)'
           ignore-label: 'internal'

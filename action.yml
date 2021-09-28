@@ -1,8 +1,9 @@
 name: 'Comment on new issue'
 description: 'Comment on issue with a defined message whenever someone creates a new issue.'
-icon: file-text
-color: purple
 author: jd-0001
+branding:
+  icon: file-text
+  color: purple
 inputs:
   token:
     description: "GitHub personal token"

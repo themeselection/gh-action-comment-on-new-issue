@@ -3,6 +3,8 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 
+const extractRegex = />[\s\w\d:\.]*\r\n>[\s\w\d]*:\s(?<type>\w*)\r\n>[\s\w\d]*:\s(?<subtype>\w*)/gm
+
 const getOctokit = () => {
     const token = core.getInput('token');
     return github.getOctokit(token);   
@@ -31,8 +33,8 @@ try {
     const octokit = getOctokit()
     const ctx = github.context
     
-    console.log("ctx.eventName", ctx.eventName)
-    console.log("Payload", JSON.stringify(github.context.payload, undefined, 2))
+    console.log("ctx.eventName: ", ctx.eventName)
+    console.log("Payload: ", JSON.stringify(github.context.payload, undefined, 2))
 
     // Check if event is issue
     // Docs: https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows
@@ -54,7 +56,20 @@ try {
           }
 
           // Extract issue type & sub type from comment
-          console.log("Comment: ", ctx.payload.comment)
+          const commentBody = ctx.payload.issue.body
+          const matches = extractRegex.exec(commentBody)
+
+          const issueType = matches.groups.type
+          const issueSubtype = matches.groups.subtype
+
+          // Add labels
+          octokit.rest.issues.addLabels({
+              issue_number: ctx.payload.issue.number,
+              owner: ctx.repo.owner,
+              repo: ctx.repo.repo,
+              labels: [issueType, issueSubtype]
+          })
+          
 
           // Post Comment
           octokit.rest.issues.createComment({

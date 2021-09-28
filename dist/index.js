@@ -8525,7 +8525,7 @@ var __webpack_exports__ = {};
 const core = __nccwpck_require__(2186);
 const github = __nccwpck_require__(5438);
 
-const extractRegex = />[\s\w\d:\.]*\r\n>[\s\w\d]*:\s(?<type>\w*)\r\n>[\s\w\d]*:\s(?<subtype>\w*)/gm
+const extractRegex = />[\s\w\d:\.]*\r\n>[\s\w\d]*:\s(?<type>[\w-\s:]*)\r\n(>[\s\w\d]*:\s(?<subtype>[\w-\s:]*))?/gm
 
 const getOctokit = () => {
     const token = core.getInput('token');
@@ -8577,9 +8577,21 @@ try {
               return
           }
 
+          // Post Comment
+          octokit.rest.issues.createComment({
+            owner: ctx.repo.owner,
+            repo: ctx.repo.repo,
+            body: message,
+            issue_number: ctx.issue.number     
+          })
+
           // Extract issue type & sub type from comment
-          const commentBody = ctx.payload.issue.body
-          const matches = extractRegex.exec(commentBody)
+          const issueBody = ctx.payload.issue.body
+          const matches = extractRegex.exec(issueBody)
+
+          if (!matches) {
+            core.setFailed(`Unable to find issueType or issueSubType. Match value: ${matches}. issue body: ${issueBody}`);
+          }
 
           const issueType = matches.groups.type.toLowerCase()
           const issueSubtype = matches.groups.subtype.toLowerCase()
@@ -8594,29 +8606,26 @@ try {
 
           // If `issueType` is present in existing repo issues => Push it to `labelsToAdd`.
           // Else print warning and omit adding label to issue. (This is because if we add this to issue then it will create new unwanted label in repo)
-          if (!repoLabelsName.includes(issueType)) core.warning(`label "${issueType}" doesn't exist on repo`)
+          if (!repoLabelsName.includes(issueType)) core.warning(`label "${issueType}" doesn't exist on repo. Skipping adding ${issueType} label.`)
           else labelsToAdd.push(issueType)
 
-          // If `issueSubtype` is present in existing repo issues => Push it to `labelsToAdd`.
-          // Else print warning and omit adding label to issue. (This is because if we add this to issue then it will create new unwanted label in repo)
-          if (!repoLabelsName.includes(issueSubtype)) core.warning(`label "${issueSubtype}" doesn't exist on repo`)
-          else labelsToAdd.push(issueSubtype)
+          // Issue subtype is optional
+          if (issueSubtype) {
+            // If `issueSubtype` is present in existing repo issues => Push it to `labelsToAdd`.
+            // Else print warning and omit adding label to issue. (This is because if we add this to issue then it will create new unwanted label in repo)
+            if (!repoLabelsName.includes(issueSubtype)) core.warning(`label "${issueSubtype}" doesn't exist on repo.  Skipping adding ${issueSubtype} label.`)
+            else labelsToAdd.push(issueSubtype)
+          }
 
-          // Add labels
-          octokit.rest.issues.addLabels({
-              issue_number: ctx.payload.issue.number,
-              owner: ctx.repo.owner,
-              repo: ctx.repo.repo,
-              labels: labelsToAdd
-          })
-
-          // Post Comment
-          octokit.rest.issues.createComment({
-            owner: ctx.repo.owner,
-            repo: ctx.repo.repo,
-            body: message,
-            issue_number: ctx.issue.number     
-          })
+          if (labelsToAdd.length) {
+            // Add labels
+            octokit.rest.issues.addLabels({
+                issue_number: ctx.payload.issue.number,
+                owner: ctx.repo.owner,
+                repo: ctx.repo.repo,
+                labels: labelsToAdd
+            })
+          }
         }
     }
 } catch (error) {

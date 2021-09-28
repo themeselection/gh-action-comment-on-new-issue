@@ -8,11 +8,24 @@ const getOctokit = () => {
     return github.getOctokit(token);   
 }
 
+const hasLabel = (issue, label) => {
+    const labelNames = issue.labels.map(issueObj => issueObj.name)
+    return labelNames.includes(label)
+}
+
+// TODO: Only send this message on specific label
+
 try {
 
     // Get config
     const message = core.getInput('message');
-    console.log("message", message)
+    core.info(`message: ${message}`)
+
+    const ignoreLabel = core.getInput('ignore-label');
+    core.info(`ignoreLabel: ${ignoreLabel}`)
+
+    const onlyIfLabel = core.getInput('only-if-label');
+    core.info(`onlyIfLabel: ${onlyIfLabel}`)
 
     // Get octokit
     const octokit = getOctokit()
@@ -27,6 +40,19 @@ try {
         // Check if new issue is opened
         if (ctx.payload.action === "opened") {
           // Docs: https://octokit.github.io/rest.js/v18#issues
+
+          // If `onlyIfLabel` label is provided & that label is not present on issue => ignore
+          if (onlyIfLabel && !hasLabel(ctx.payload.issue, onlyIfLabel)) {
+              core.info(`Ignoring as onlyIfLabel "${onlyIfLabel}" is not present on issue. Exiting.`)
+              return
+          }
+
+          // If `ignoreLabel` label is provided & that label is present on issue => ignore
+          if (ignoreLabel && hasLabel(ctx.payload.issue, ignoreLabel)) {
+              core.info(`Ignoring as ignoreLabel "${ignoreLabel}" is present on issue. Exiting.`)
+              return
+          }
+
           octokit.rest.issues.createComment({
             owner: ctx.repo.owner,
             repo: ctx.repo.repo,

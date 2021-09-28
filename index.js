@@ -2,6 +2,7 @@
 
 const core = require('@actions/core');
 const github = require('@actions/github');
+const failedMsgs = []
 
 const extractRegex = />[\s\w\d:\.]*\r\n>[\s\w\d]*:\s(?<type>[\w-\s:]*)\r\n(>[\s\w\d]*:\s(?<subtype>[\w-\s:]*))?/gm
 
@@ -83,15 +84,15 @@ try {
           const labelsToAdd = []
 
           // If `issueType` is present in existing repo issues => Push it to `labelsToAdd`.
-          // Else print warning and omit adding label to issue. (This is because if we add this to issue then it will create new unwanted label in repo)
-          if (!repoLabelsName.includes(issueType)) core.warning(`label "${issueType}" doesn't exist on repo. Skipping adding ${issueType} label.`)
+          // Else mark action as failed at the end and omit adding label to issue. (This is because if we add this to issue then it will create new unwanted label in repo)
+          if (!repoLabelsName.includes(issueType)) failedMsgs.push(`label "${issueType}" doesn't exist on repo. Skipping adding ${issueType} label.`)
           else labelsToAdd.push(issueType)
 
           // Issue subtype is optional
           if (issueSubtype) {
             // If `issueSubtype` is present in existing repo issues => Push it to `labelsToAdd`.
-            // Else print warning and omit adding label to issue. (This is because if we add this to issue then it will create new unwanted label in repo)
-            if (!repoLabelsName.includes(issueSubtype)) core.warning(`label "${issueSubtype}" doesn't exist on repo.  Skipping adding ${issueSubtype} label.`)
+            // Else mark action as failed at the end and omit adding label to issue. (This is because if we add this to issue then it will create new unwanted label in repo)
+            if (!repoLabelsName.includes(issueSubtype)) failedMsgs.push(`label "${issueSubtype}" doesn't exist on repo.  Skipping adding ${issueSubtype} label.`)
             else labelsToAdd.push(issueSubtype)
           }
 
@@ -104,6 +105,8 @@ try {
                 labels: labelsToAdd
             })
           }
+
+          if (failedMsgs.length) core.setFailed(`Errors:\n${failedMsgs.join("\n")}`)
         }
     }
 } catch (error) {

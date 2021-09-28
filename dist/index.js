@@ -8553,8 +8553,8 @@ try {
     const octokit = getOctokit()
     const ctx = github.context
     
-    // console.log("ctx.eventName", ctx.eventName)
-    // console.log("Payload", JSON.stringify(github.context.payload, undefined, 2))
+    console.log("ctx.eventName", ctx.eventName)
+    console.log("Payload", JSON.stringify(github.context.payload, undefined, 2))
 
     // Check if event is issue
     // Docs: https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows
@@ -8575,6 +8575,10 @@ try {
               return
           }
 
+          // Extract issue type & sub type from comment
+          console.log("Comment: ", ctx.payload.comment)
+
+          // Post Comment
           octokit.rest.issues.createComment({
             owner: ctx.repo.owner,
             repo: ctx.repo.repo,

@@ -8538,7 +8538,7 @@ const hasLabel = (issue, label) => {
 }
 
 // TODO: Only send this message on specific label
-
+(async () => {
 try {
 
     // Get config
@@ -8581,17 +8581,34 @@ try {
           const commentBody = ctx.payload.issue.body
           const matches = extractRegex.exec(commentBody)
 
-          const issueType = matches.groups.type
-          const issueSubtype = matches.groups.subtype
+          const issueType = matches.groups.type.toLowerCase()
+          const issueSubtype = matches.groups.subtype.toLowerCase()
+
+          const { data: repoLabels } = await octokit.rest.issues.listLabelsForRepo({
+            owner: ctx.repo.owner,
+            repo: ctx.repo.repo
+          })
+
+          const repoLabelsName = repoLabels.map(l => l.name)
+          const labelsToAdd = []
+
+          // If `issueType` is present in existing repo issues => Push it to `labelsToAdd`.
+          // Else print warning and omit adding label to issue. (This is because if we add this to issue then it will create new unwanted label in repo)
+          if (!repoLabelsName.includes(issueType)) core.warning(`label "${issueType}" doesn't exist on repo`)
+          else labelsToAdd.push(issueType)
+
+          // If `issueSubtype` is present in existing repo issues => Push it to `labelsToAdd`.
+          // Else print warning and omit adding label to issue. (This is because if we add this to issue then it will create new unwanted label in repo)
+          if (!repoLabelsName.includes(issueSubtype)) core.warning(`label "${issueSubtype}" doesn't exist on repo`)
+          else labelsToAdd.push(issueSubtype)
 
           // Add labels
           octokit.rest.issues.addLabels({
               issue_number: ctx.payload.issue.number,
               owner: ctx.repo.owner,
               repo: ctx.repo.repo,
-              labels: [issueType, issueSubtype]
+              labels: labelsToAdd
           })
-          
 
           // Post Comment
           octokit.rest.issues.createComment({
@@ -8605,6 +8622,7 @@ try {
 } catch (error) {
   core.setFailed(error.message);
 }
+})()
 })();
 
 module.exports = __webpack_exports__;

@@ -8526,7 +8526,7 @@ const core = __nccwpck_require__(2186);
 const github = __nccwpck_require__(5438);
 const failedMsgs = []
 
-const labelsRegex = />[\s\w\d:\.]*<br>[\s\w\d]*:\s(?<labels>[\w-\s:,]*)/gm
+const labelsRegex = /<!-- Issue Labels: (?<labels>[\w-\s:,]*) -->/gm
 
 const getOctokit = () => {
     const token = core.getInput('token');

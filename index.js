@@ -4,7 +4,7 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const failedMsgs = []
 
-const labelsRegex = />[\s\w\d:\.]*<br>[\s\w\d]*:\s(?<labels>[\w-\s:,]*)/gm
+const labelsRegex = /<!-- Issue Labels: (?<labels>[\w-\s:,]*) -->/gm
 
 const getOctokit = () => {
     const token = core.getInput('token');

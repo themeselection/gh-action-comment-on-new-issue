@@ -8526,7 +8526,7 @@ const core = __nccwpck_require__(2186);
 const github = __nccwpck_require__(5438);
 const failedMsgs = []
 
-const extractRegex = />[\s\w\d:\.]*\r\n>[\s\w\d]*:\s(?<type>[\w-\s:]*)\r\n(>[\s\w\d]*:\s(?<subtype>[\w-\s:]*))?/gm
+const labelsRegex = />[\s\w\d:\.]*<br>[\s\w\d]*:\s(?<labels>[\w-\s:,]*)/gm
 
 const getOctokit = () => {
     const token = core.getInput('token');
@@ -8588,14 +8588,15 @@ try {
 
           // Extract issue type & sub type from comment
           const issueBody = ctx.payload.issue.body
-          const matches = extractRegex.exec(issueBody)
+          const matches = labelsRegex.exec(issueBody)
 
           if (!matches) {
             core.setFailed(`Unable to find issueType or issueSubType. Match value: ${matches}. issue body: ${issueBody}`);
+            return
           }
 
-          const issueType = matches.groups.type.toLowerCase()
-          const issueSubtype = matches.groups.subtype.toLowerCase()
+          const issueCsv = matches.groups.labels
+          const labels = issueCsv.split(",").map(i => i.trim())
 
           const { data: repoLabels } = await octokit.rest.issues.listLabelsForRepo({
             owner: ctx.repo.owner,
@@ -8605,18 +8606,13 @@ try {
           const repoLabelsName = repoLabels.map(l => l.name)
           const labelsToAdd = []
 
-          // If `issueType` is present in existing repo issues => Push it to `labelsToAdd`.
-          // Else mark action as failed at the end and omit adding label to issue. (This is because if we add this to issue then it will create new unwanted label in repo)
-          if (!repoLabelsName.includes(issueType)) failedMsgs.push(`label "${issueType}" doesn't exist on repo. Skipping adding ${issueType} label.`)
-          else labelsToAdd.push(issueType)
-
-          // Issue subtype is optional
-          if (issueSubtype) {
-            // If `issueSubtype` is present in existing repo issues => Push it to `labelsToAdd`.
+          // Loop over all markdown labels to check if every label is present in repo
+          labels.forEach(label => {
+            // If `label` is present in existing repo issues => Push it to `labelsToAdd`.
             // Else mark action as failed at the end and omit adding label to issue. (This is because if we add this to issue then it will create new unwanted label in repo)
-            if (!repoLabelsName.includes(issueSubtype)) failedMsgs.push(`label "${issueSubtype}" doesn't exist on repo.  Skipping adding ${issueSubtype} label.`)
-            else labelsToAdd.push(issueSubtype)
-          }
+            if (!repoLabelsName.includes(label)) failedMsgs.push(`label "${label}" doesn't exist on repo. Skipping adding ${label} label.`)
+            else labelsToAdd.push(label)
+          })
 
           if (labelsToAdd.length) {
             // Add labels

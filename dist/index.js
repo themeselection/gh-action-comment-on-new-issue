@@ -8578,50 +8578,50 @@ try {
               return
           }
 
-          // Post Comment
-          octokit.rest.issues.createComment({
-            owner: ctx.repo.owner,
-            repo: ctx.repo.repo,
-            body: message,
-            issue_number: ctx.issue.number     
-          })
-
           // Extract issue type & sub type from comment
           const issueBody = ctx.payload.issue.body
           const matches = labelsRegex.exec(issueBody)
 
-          if (!matches) {
-            core.setFailed(`Unable to find issueType or issueSubType. Match value: ${matches}. issue body: ${issueBody}`);
-            return
-          }
+          // ℹ️ If matches is found => Issue need labels to attached & created using our issue form
+          if (matches) {
+            const issueCsv = matches.groups.labels
+            const labels = issueCsv.split(",").map(i => i.trim())
+  
+            const { data: repoLabels } = await octokit.rest.issues.listLabelsForRepo({
+              owner: ctx.repo.owner,
+              repo: ctx.repo.repo
+            })
+  
+            const repoLabelsName = repoLabels.map(l => l.name)
+            const labelsToAdd = []
+  
+            // Loop over all markdown labels to check if every label is present in repo
+            labels.forEach(label => {
+              // If `label` is present in existing repo issues => Push it to `labelsToAdd`.
+              // Else mark action as failed at the end and omit adding label to issue. (This is because if we add this to issue then it will create new unwanted label in repo)
+              if (!repoLabelsName.includes(label)) failedMsgs.push(`label "${label}" doesn't exist on repo. Skipping adding ${label} label.`)
+              else labelsToAdd.push(label)
+            })
+  
+            if (labelsToAdd.length) {
+              // Add labels
+              octokit.rest.issues.addLabels({
+                  issue_number: ctx.payload.issue.number,
+                  owner: ctx.repo.owner,
+                  repo: ctx.repo.repo,
+                  labels: labelsToAdd
+              })
+            }
 
-          const issueCsv = matches.groups.labels
-          const labels = issueCsv.split(",").map(i => i.trim())
-
-          const { data: repoLabels } = await octokit.rest.issues.listLabelsForRepo({
-            owner: ctx.repo.owner,
-            repo: ctx.repo.repo
-          })
-
-          const repoLabelsName = repoLabels.map(l => l.name)
-          const labelsToAdd = []
-
-          // Loop over all markdown labels to check if every label is present in repo
-          labels.forEach(label => {
-            // If `label` is present in existing repo issues => Push it to `labelsToAdd`.
-            // Else mark action as failed at the end and omit adding label to issue. (This is because if we add this to issue then it will create new unwanted label in repo)
-            if (!repoLabelsName.includes(label)) failedMsgs.push(`label "${label}" doesn't exist on repo. Skipping adding ${label} label.`)
-            else labelsToAdd.push(label)
-          })
-
-          if (labelsToAdd.length) {
-            // Add labels
-            octokit.rest.issues.addLabels({
-                issue_number: ctx.payload.issue.number,
+            // Post Comment if issue is support
+            if (labelsToAdd.includes("support")) {
+              octokit.rest.issues.createComment({
                 owner: ctx.repo.owner,
                 repo: ctx.repo.repo,
-                labels: labelsToAdd
-            })
+                body: message,
+                issue_number: ctx.issue.number     
+              })
+            }
           }
 
           if (failedMsgs.length) core.setFailed(`Errors:\n${failedMsgs.join("\n")}`)

@@ -8624,6 +8624,8 @@ try {
             } else {
               core.info(`"support" label is not found. Ignoring adding comment to the issue.`)
             }
+          } else {
+            core.info(`Issue labels comment not found in issue body. Ignoring adding labels & welcome message.`)
           }
 
           if (failedMsgs.length) core.setFailed(`Errors:\n${failedMsgs.join("\n")}`)

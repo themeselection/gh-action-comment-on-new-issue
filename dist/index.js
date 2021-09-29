@@ -8621,6 +8621,8 @@ try {
                 body: message,
                 issue_number: ctx.issue.number     
               })
+            } else {
+              core.info(`"support" label is not found. Ignoring adding comment to the issue.`)
             }
           }
 

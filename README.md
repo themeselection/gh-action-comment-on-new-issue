@@ -24,6 +24,12 @@ Only post comment if this label is found on the issue. This is helpful in scenar
 
 Do note that if `ignore-label` is also found with this label then action will omit processing.
 
+### `raise-support-using-form-msg`
+
+Value of this parameter will be commented when new user outside of organization create an issue.
+
+Just after this comment issue will be closed.
+
 ## Example Usage
 
 > NOTE: Do update action version `jd-0001/gh-action-comment-on-new-issue@{YOUR_DESIRED_VERSION}`. This will help you keep using this action if we introduce breaking changes.

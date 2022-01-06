@@ -8629,11 +8629,15 @@ try {
             }
           } else {
             
+            console.log("making request...")
+
             // ℹ️ Check if user is organization member
             const { status } = await octokit.rest.orgs.checkMembershipForUser({
               org: ctx.repo.owner,
               username: ctx.payload.issue.user.login
             })
+
+            console.log("status")
 
             /*
               status ==== 204 => org member

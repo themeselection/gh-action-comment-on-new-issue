@@ -8631,6 +8631,7 @@ try {
 
             try {
               // ℹ️ Check if user is organization member
+              // https://docs.github.com/en/rest/reference/orgs#check-organization-membership-for-a-user
               const { status } = await octokit.rest.orgs.checkMembershipForUser({
                 org: ctx.repo.owner,
                 username: ctx.payload.issue.user.login
@@ -8638,8 +8639,8 @@ try {
 
               /*
                 status ==== 204 => org member
-                status ==== 302 => not org member
-                status ==== 404 => unable to identify
+                status ==== 302 => requester is not member
+                status ==== 404 => requester is member and user is not member
               */
 
               console.log(`"Membership of user response status: ${status}"`)
@@ -8649,26 +8650,30 @@ try {
               }
             } catch(error) {
               console.log("Error:")
-              console.log(error)
-              console.log(error.response)
-              console.log(error.data)
-              core.info(`Issue isn't created by organization member.`)
+              // console.log(error.response)
+              console.log(error.response.data.message)
 
-              // Add comment for raising issue using form
-              octokit.rest.issues.createComment({
-                owner: ctx.repo.owner,
-                repo: ctx.repo.repo,
-                body: raiseSupportUsingFormMsg,
-                issue_number: ctx.issue.number
-              })
-  
-              // Close the issue
-              await octokit.rest.issues.update({
-                owner: ctx.repo.owner,
-                repo: ctx.repo.repo,
-                issue_number: ctx.payload.issue.number,
-                state: 'closed'
-              })
+              // 404 if user is not member
+              if (error.response.status === 404) {
+                // Add comment for raising issue using form
+                octokit.rest.issues.createComment({
+                  owner: ctx.repo.owner,
+                  repo: ctx.repo.repo,
+                  body: raiseSupportUsingFormMsg,
+                  issue_number: ctx.issue.number
+                })
+    
+                // Close the issue
+                await octokit.rest.issues.update({
+                  owner: ctx.repo.owner,
+                  repo: ctx.repo.repo,
+                  issue_number: ctx.payload.issue.number,
+                  state: 'closed'
+                })
+              } else {
+                console.log(`"Unexpected response: ${error.response.status}"`)
+              }
+
             }
 
           }

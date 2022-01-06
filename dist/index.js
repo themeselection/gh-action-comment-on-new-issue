@@ -8628,23 +8628,30 @@ try {
               core.info(`"support" label is not found. Ignoring adding comment to the issue.`)
             }
           } else {
-            
-            // ℹ️ Check if user is organization member
-            const { status } = await octokit.rest.orgs.checkMembershipForUser({
-              org: ctx.repo.owner,
-              username: ctx.payload.issue.user.login
-            })
 
-            /*
-              status ==== 204 => org member
-              status ==== 302 => not org member
-              status ==== 404 => unable to identify
-            */
+            try {
+              // ℹ️ Check if user is organization member
+              const { status } = await octokit.rest.orgs.checkMembershipForUser({
+                org: ctx.repo.owner,
+                username: ctx.payload.issue.user.login
+              })
 
-            if (status === 204) {
-              core.info(`Issue labels comment not found in issue body. Ignoring adding labels & welcome message as this issue is raised by organization member.`)
-            } else if (status === 302) {
+              /*
+                status ==== 204 => org member
+                status ==== 302 => not org member
+                status ==== 404 => unable to identify
+              */
 
+              console.log(`"Membership of user response status: ${status}"`)
+
+              if (status === 204) {
+                core.info(`Issue labels comment not found in issue body. Ignoring adding labels & welcome message as this issue is raised by organization member.`)
+              }
+            } catch(error) {
+              console.log("Error:")
+              console.log(error)
+              console.log(error.response)
+              console.log(error.data)
               core.info(`Issue isn't created by organization member.`)
 
               // Add comment for raising issue using form
@@ -8662,8 +8669,6 @@ try {
                 issue_number: ctx.payload.issue.number,
                 state: 'closed'
               })
-            } else if (status === 404) {
-              core.info("unable to find if user is member or not")
             }
 
           }

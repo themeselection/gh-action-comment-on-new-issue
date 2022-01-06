@@ -8543,6 +8543,9 @@ const hasLabel = (issue, label) => {
 try {
 
     // Get config
+    const raiseSupportUsingFormMsg = core.getInput('raise-support-using-form-msg');
+    core.info(`raiseSupportUsingFormMsg: ${raiseSupportUsingFormMsg}`)
+
     const message = core.getInput('message');
     core.info(`message: ${message}`)
 
@@ -8625,7 +8628,21 @@ try {
               core.info(`"support" label is not found. Ignoring adding comment to the issue.`)
             }
           } else {
-            core.info(`Issue labels comment not found in issue body. Ignoring adding labels & welcome message.`)
+            // core.info(`Issue labels comment not found in issue body. Ignoring adding labels & welcome message.`)
+
+            octokit.rest.issues.createComment({
+              owner: ctx.repo.owner,
+              repo: ctx.repo.repo,
+              body: raiseSupportUsingFormMsg,
+              issue_number: ctx.issue.number     
+            })
+
+            await octokit.rest.issues.update({
+              owner: ctx.repo.owner,
+              repo: ctx.repo.repo,
+              issue_number: ctx.payload.issue.number,
+              state: 'closed'
+            })
           }
 
           if (failedMsgs.length) core.setFailed(`Errors:\n${failedMsgs.join("\n")}`)

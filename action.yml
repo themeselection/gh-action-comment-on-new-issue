@@ -18,6 +18,9 @@ inputs:
   only-if-label:
     description: 'Only post comment if this label is found on the issue.'
     required: false
+  raise-support-using-form-msg:
+    description: "Message to send before closing issue if issue isn't created using support form"
+    required: true
 runs:
   using: 'node12'
   main: 'dist/index.js'

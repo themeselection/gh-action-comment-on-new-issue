@@ -38,7 +38,8 @@ try {
     const ctx = github.context
     
     // console.log("ctx.eventName: ", ctx.eventName)
-    // console.log("Payload: ", JSON.stringify(github.context.payload, undefined, 2))
+    console.log("ctx.repo.owner: ", ctx.repo.owner)
+    console.log("Payload: ", JSON.stringify(github.context.payload, undefined, 2))
 
     // Check if event is issue
     // Docs: https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows
@@ -107,16 +108,32 @@ try {
             }
           } else {
             
-            const { data: raiseIssue } = await octokit.rest.issues.get({
+            const { data: raisedIssue } = await octokit.rest.issues.get({
               issue_number: ctx.payload.issue.number,
               owner: ctx.repo.owner,
               repo: ctx.repo.repo,
             })
+            
+            const usernameOfIssueRaiser = raisedIssue.user.login
+            console.log("usernameOfIssueRaiser: ", usernameOfIssueRaiser)
 
             console.log("Issue details:")
-            console.log(raiseIssue)
+            console.log(raisedIssue)
+
+            const { status } = await octokit.rest.orgs.checkMembershipForUser({
+              org: ctx.repo.owner,
+              username: usernameOfIssueRaiser
+            })
+
+            if (status === 204) {
+              console.log(`${usernameOfIssueRaiser} is org member`)
+            } else if (status === 302) {
+              console.log(`${usernameOfIssueRaiser} is not org member`)
+            } else if (status === 404) {
+              console.log("unable to find if user is member or not")
+            }
             
-            if (raiseIssue.author_association === 'OWNER' || raiseIssue.author_association === 'MEMBER') {
+            if (raisedIssue.author_association === 'OWNER' || raisedIssue.author_association === 'MEMBER') {
               core.info(`Issue labels comment not found in issue body. Ignoring adding labels & welcome message as this issue is raised by either owner or member.`)
             } else {
               octokit.rest.issues.createComment({

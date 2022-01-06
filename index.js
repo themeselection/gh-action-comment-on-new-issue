@@ -112,6 +112,9 @@ try {
               owner: ctx.repo.owner,
               repo: ctx.repo.repo,
             })
+
+            console.log("Issue details:")
+            console.log(raiseIssue)
             
             if (raiseIssue.author_association === 'OWNER' || raiseIssue.author_association === 'MEMBER') {
               core.info(`Issue labels comment not found in issue body. Ignoring adding labels & welcome message as this issue is raised by either owner or member.`)

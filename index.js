@@ -107,15 +107,25 @@ try {
             }
           } else {
             
-            const { data: raiseIssue } = await octokit.rest.issues.get({
-              issue_number: ctx.payload.issue.number,
-              owner: ctx.repo.owner,
-              repo: ctx.repo.repo,
+            // ℹ️ Check if user is organization member
+            const { status } = await octokit.rest.orgs.checkMembershipForUser({
+              org: ctx.repo.owner,
+              username: ctx.payload.issue.user.login
             })
-            
-            if (raiseIssue.author_association === 'OWNER' || raiseIssue.author_association === 'MEMBER') {
-              core.info(`Issue labels comment not found in issue body. Ignoring adding labels & welcome message as this issue is raised by either owner or member.`)
-            } else {
+
+            /*
+              status ==== 204 => org member
+              status ==== 302 => not org member
+              status ==== 404 => unable to identify
+            */
+
+            if (status === 204) {
+              core.info(`Issue labels comment not found in issue body. Ignoring adding labels & welcome message as this issue is raised by organization member.`)
+            } else if (status === 302) {
+
+              core.info(`Issue isn't created by organization member.`)
+
+              // Add comment for raising issue using form
               octokit.rest.issues.createComment({
                 owner: ctx.repo.owner,
                 repo: ctx.repo.repo,
@@ -123,12 +133,15 @@ try {
                 issue_number: ctx.issue.number
               })
   
+              // Close the issue
               await octokit.rest.issues.update({
                 owner: ctx.repo.owner,
                 repo: ctx.repo.repo,
                 issue_number: ctx.payload.issue.number,
                 state: 'closed'
               })
+            } else if (status === 404) {
+              core.info("unable to find if user is member or not")
             }
 
           }

@@ -109,13 +109,17 @@ try {
             
             console.log("making request...")
 
-            // ℹ️ Check if user is organization member
-            const { status } = await octokit.rest.orgs.checkMembershipForUser({
-              org: ctx.repo.owner,
-              username: ctx.payload.issue.user.login
-            })
-
-            console.log("status")
+            try {
+              // ℹ️ Check if user is organization member
+              const { status } = await octokit.rest.orgs.checkMembershipForUser({
+                org: ctx.repo.owner,
+                username: ctx.payload.issue.user.login
+              })
+              console.log("status", status)
+            } catch(e)  {
+              console.log("handled..")
+              console.log(e)
+            }
 
             /*
               status ==== 204 => org member
@@ -123,30 +127,30 @@ try {
               status ==== 404 => unable to identify
             */
 
-            if (status === 204) {
-              core.info(`Issue labels comment not found in issue body. Ignoring adding labels & welcome message as this issue is raised by organization member.`)
-            } else if (status === 302) {
+            // if (status === 204) {
+            //   core.info(`Issue labels comment not found in issue body. Ignoring adding labels & welcome message as this issue is raised by organization member.`)
+            // } else if (status === 302) {
 
-              core.info(`Issue isn't created by organization member.`)
+            //   core.info(`Issue isn't created by organization member.`)
 
-              // Add comment for raising issue using form
-              octokit.rest.issues.createComment({
-                owner: ctx.repo.owner,
-                repo: ctx.repo.repo,
-                body: raiseSupportUsingFormMsg,
-                issue_number: ctx.issue.number
-              })
+            //   // Add comment for raising issue using form
+            //   octokit.rest.issues.createComment({
+            //     owner: ctx.repo.owner,
+            //     repo: ctx.repo.repo,
+            //     body: raiseSupportUsingFormMsg,
+            //     issue_number: ctx.issue.number
+            //   })
   
-              // Close the issue
-              await octokit.rest.issues.update({
-                owner: ctx.repo.owner,
-                repo: ctx.repo.repo,
-                issue_number: ctx.payload.issue.number,
-                state: 'closed'
-              })
-            } else if (status === 404) {
-              core.info("unable to find if user is member or not")
-            }
+            //   // Close the issue
+            //   await octokit.rest.issues.update({
+            //     owner: ctx.repo.owner,
+            //     repo: ctx.repo.repo,
+            //     issue_number: ctx.payload.issue.number,
+            //     state: 'closed'
+            //   })
+            // } else if (status === 404) {
+            //   core.info("unable to find if user is member or not")
+            // }
 
           }
 

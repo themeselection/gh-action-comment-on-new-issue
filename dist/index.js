@@ -8543,24 +8543,27 @@ const hasLabel = (issue, label) => {
 (async () => {
   try {
     // Get config
+    const debug = Boolean(core.getInput('debug'))
+    core.info(`debug: ${debug}`)
+
     const raiseSupportUsingFormMsg = core.getInput('raise-support-using-form-msg')
-    core.info(`raiseSupportUsingFormMsg: ${raiseSupportUsingFormMsg}`)
+    if (debug) core.info(`raiseSupportUsingFormMsg: ${raiseSupportUsingFormMsg}`)
 
     const message = core.getInput('message')
-    core.info(`message: ${message}`)
+    if (debug) core.info(`message: ${message}`)
 
     const ignoreLabel = core.getInput('ignore-label')
-    core.info(`ignoreLabel: ${ignoreLabel}`)
+    if (debug) core.info(`ignoreLabel: ${ignoreLabel}`)
 
     const onlyIfLabel = core.getInput('only-if-label')
-    core.info(`onlyIfLabel: ${onlyIfLabel}`)
+    if (debug) core.info(`onlyIfLabel: ${onlyIfLabel}`)
 
     // Get octokit
     const octokit = getOctokit()
     const ctx = github.context
 
-    // core.info("ctx.eventName: ", ctx.eventName)
-    // core.info("Payload: ", JSON.stringify(github.context.payload, undefined, 2))
+    if (debug) core.info('ctx.eventName: ', ctx.eventName)
+    if (debug) core.info('Payload: ', JSON.stringify(github.context.payload, undefined, 2))
 
     // Check if event is issue
     // Docs: https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows
@@ -8583,7 +8586,10 @@ const hasLabel = (issue, label) => {
 
         // Extract issue type & sub type from comment
         const issueBody = ctx.payload.issue.body
+        if (debug) core.info('issueBody: ', issueBody)
+
         const matches = labelsRegex.exec(issueBody)
+        if (debug) core.info('labels regex matches: ', matches)
 
         // ℹ️ If matches is found => Issue need labels to attached & created using our issue form
         if (matches) {
@@ -8595,6 +8601,7 @@ const hasLabel = (issue, label) => {
             repo: ctx.repo.repo,
           })
 
+          if (debug) core.info('repoLabels: ', repoLabels)
           const repoLabelsName = repoLabels.map(l => l.name)
           const labelsToAdd = []
 
@@ -8630,6 +8637,8 @@ const hasLabel = (issue, label) => {
           }
         } else {
           try {
+            if (debug) core.info('Making request for checking user membership')
+
             // ℹ️ Check if user is organization member
             // https://docs.github.com/en/rest/reference/orgs#check-organization-membership-for-a-user
             const { status } = await octokit.rest.orgs.checkMembershipForUser({
@@ -8643,18 +8652,25 @@ const hasLabel = (issue, label) => {
                 status ==== 404 => requester is member and user is not member
               */
 
+            if (debug) core.info(`'Request response status: ${status}'`)
+
             core.info(`"Membership of user response status: ${status}"`)
 
             if (status === 204) {
               core.info('Issue labels comment not found in issue body. Ignoring adding labels & welcome message as this issue is raised by organization member.')
             }
           } catch (error) {
+            if (debug) core.info('Request threw exception. Handled in catch block.')
+            if (debug) core.info(`'Error response status: ${error.response.status}'`)
+
             core.info('Error:')
             // core.info(error.response)
             core.info(error.response.data.message)
 
             // 404 if user is not member
             if (error.response.status === 404) {
+              core.info('Got 404 as  request response status. Hence, user is not org member')
+              core.info('Creating comment to raise the issue using support form')
               // Add comment for raising issue using form
               octokit.rest.issues.createComment({
                 owner: ctx.repo.owner,
@@ -8662,6 +8678,8 @@ const hasLabel = (issue, label) => {
                 body: raiseSupportUsingFormMsg,
                 issue_number: ctx.issue.number,
               })
+
+              core.info('Closing this issue as issue is not created using support form and creator is not org member')
 
               // Close the issue
               await octokit.rest.issues.update({

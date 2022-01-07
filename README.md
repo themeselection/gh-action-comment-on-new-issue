@@ -24,11 +24,15 @@ Only post comment if this label is found on the issue. This is helpful in scenar
 
 Do note that if `ignore-label` is also found with this label then action will omit processing.
 
-### `raise-support-using-form-msg`
+### `raise-support-using-form-msg`*
 
 Value of this parameter will be commented when new user outside of organization create an issue.
 
 Just after this comment issue will be closed.
+
+### `debug`
+
+Boolean value which will tell action to log the action it performs. Useful for debugging.
 
 ## Example Usage
 
@@ -50,6 +54,7 @@ jobs:
         uses: jd-0001/gh-action-comment-on-new-issue@v2.0.3
         with:
           message: 'Welcome to the repo :)'
+          raise-support-using-form-msg: 'Please raise issue using our support form'
 ```
 
 ### Comment on issue which has specific label
@@ -68,6 +73,7 @@ jobs:
         uses: jd-0001/gh-action-comment-on-new-issue@v2.0.3
         with:
           message: 'Welcome to the repo :)'
+          raise-support-using-form-msg: 'Please raise issue using our support form'
           only-if-label: 'support'
 ```
 
@@ -87,5 +93,26 @@ jobs:
         uses: jd-0001/gh-action-comment-on-new-issue@v2.0.3
         with:
           message: 'Welcome to the repo :)'
+          raise-support-using-form-msg: 'Please raise issue using our support form'
           ignore-label: 'internal'
+```
+
+### Turn on debugging
+
+```yml
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  comment_on_new_issue:
+    runs-on: ubuntu-latest
+    name: Job for commenting on new issue
+    steps:
+      - name: Comment
+        uses: jd-0001/gh-action-comment-on-new-issue@v2.0.3
+        with:
+          message: 'Welcome to the repo :)'
+          raise-support-using-form-msg: 'Please raise issue using our support form'
+          debug: true
 ```

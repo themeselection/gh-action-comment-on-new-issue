@@ -21,6 +21,9 @@ inputs:
   raise-support-using-form-msg:
     description: "Message to send before closing issue if issue isn't created using support form"
     required: true
+  debug:
+  description: "Debug the action which will print more information on how its running and what's processing"
+  required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'

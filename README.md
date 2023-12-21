@@ -36,7 +36,7 @@ Boolean value which will tell action to log the action it performs. Useful for d
 
 ## Example Usage
 
-> NOTE: Do update action version `jd-0001/gh-action-comment-on-new-issue@{YOUR_DESIRED_VERSION}`. This will help you keep using this action if we introduce breaking changes.
+> NOTE: Do update action version `jd-solanki/gh-action-comment-on-new-issue@{YOUR_DESIRED_VERSION}`. This will help you keep using this action if we introduce breaking changes.
 
 ### Comment on each issue with specified message
 
@@ -51,7 +51,7 @@ jobs:
     name: Job for commenting on new issue
     steps:
       - name: Comment
-        uses: jd-0001/gh-action-comment-on-new-issue@v2.0.3
+        uses: jd-solanki/gh-action-comment-on-new-issue@v2.0.3
         with:
           message: 'Welcome to the repo :)'
           raise-support-using-form-msg: 'Please raise issue using our support form'
@@ -70,7 +70,7 @@ jobs:
     name: Job for commenting on new issue
     steps:
       - name: Comment
-        uses: jd-0001/gh-action-comment-on-new-issue@v2.0.3
+        uses: jd-solanki/gh-action-comment-on-new-issue@v2.0.3
         with:
           message: 'Welcome to the repo :)'
           raise-support-using-form-msg: 'Please raise issue using our support form'
@@ -90,7 +90,7 @@ jobs:
     name: Job for commenting on new issue
     steps:
       - name: Comment
-        uses: jd-0001/gh-action-comment-on-new-issue@v2.0.3
+        uses: jd-solanki/gh-action-comment-on-new-issue@v2.0.3
         with:
           message: 'Welcome to the repo :)'
           raise-support-using-form-msg: 'Please raise issue using our support form'
@@ -110,7 +110,7 @@ jobs:
     name: Job for commenting on new issue
     steps:
       - name: Comment
-        uses: jd-0001/gh-action-comment-on-new-issue@v2.0.3
+        uses: jd-solanki/gh-action-comment-on-new-issue@v2.0.3
         with:
           message: 'Welcome to the repo :)'
           raise-support-using-form-msg: 'Please raise issue using our support form'

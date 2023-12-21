@@ -9,15 +9,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jd-0001/gh-action-comment-on-issue-open.git"
+    "url": "git+https://github.com/jd-solanki/gh-action-comment-on-issue-open.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/jd-0001/gh-action-comment-on-issue-open/issues"
+    "url": "https://github.com/jd-solanki/gh-action-comment-on-issue-open/issues"
   },
-  "homepage": "https://github.com/jd-0001/gh-action-comment-on-issue-open#readme",
+  "homepage": "https://github.com/jd-solanki/gh-action-comment-on-issue-open#readme",
   "dependencies": {
     "@actions/core": "^1.5.0",
     "@actions/github": "^5.0.0"
